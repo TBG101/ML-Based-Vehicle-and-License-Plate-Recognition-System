@@ -1,7 +1,7 @@
 # 🚗🔍 ML-Based Vehicle and License Plate Recognition System
 
 ## 📘 Project Description
-This university project aims to develop an intelligent system for vehicle and license plate recognition using machine learning. Leveraging cutting-edge tools like YOLOv8 and TensorFlow, the system integrates a secure backend with Flask and PostgreSQL for data management.
+This university project at Ecole Polytechnique Sousse, aims to develop an intelligent system for vehicle and license plate recognition using machine learning. Leveraging cutting-edge tools like YOLOv8 and TensorFlow, the system integrates a secure backend with Flask and PostgreSQL for data management.
 
 ## ✨ Features  
 - 🧠 **License Plate Detection** using **YOLOv8**  
@@ -21,7 +21,7 @@ This university project aims to develop an intelligent system for vehicle and li
 ### 📦 Installation  
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/TBG101/ML-Based-Vehicle-and-License-Plate-Recognition-System
    cd poly_project/4eme/ml/backend
    ```
 2. Install dependencies:
