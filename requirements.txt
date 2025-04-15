@@ -14,3 +14,4 @@ roboflow==1.1.60
 kaggle==1.7.4
 PyJWT==2.10.0
 kagglehub==0.3.11
+paddlepaddle==2.6.2
