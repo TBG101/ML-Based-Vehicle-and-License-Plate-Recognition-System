@@ -4,6 +4,7 @@ dotenv==0.9.9
 ultralytics==8.3.100
 opencv-python==4.11.0.86
 paddleocr==2.10.0
+paddlepaddle==2.4.2
 numpy==1.26.4
 pillow==11.1.0
 matplotlib==3.9.4
@@ -14,4 +15,3 @@ roboflow==1.1.60
 kaggle==1.7.4
 PyJWT==2.10.0
 kagglehub==0.3.11
-paddlepaddle==2.6.2
