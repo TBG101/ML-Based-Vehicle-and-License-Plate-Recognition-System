@@ -8,12 +8,9 @@ from PIL import Image
 
 PLATE_MODEL_PATH = "models/plate_recognition_yolo_model.pt"
 
-ocr = PaddleOCR(use_angle_cls=True, lang="en")
-model = YOLO(PLATE_MODEL_PATH)
-
-
 def extract_text_from_image(image: np.ndarray, x1: int, y1: int, x2: int, y2: int, debug: bool = False) -> str:
     """Extract text from a given image using OCR."""
+    ocr = PaddleOCR(use_angle_cls=True, lang="en")
     plate = image[y1:y2, x1:x2]
     plate = cv2.cvtColor(plate, cv2.COLOR_BGR2GRAY)
 
@@ -40,6 +37,7 @@ def extract_text_from_image(image: np.ndarray, x1: int, y1: int, x2: int, y2: in
 
 
 def get_license_plates(debug=False, image=None):
+    model = YOLO(PLATE_MODEL_PATH)
     # Load and preprocess image
     if debug:
         image = cv2.imread("license-plates.jpg")
@@ -61,7 +59,7 @@ def get_license_plates(debug=False, image=None):
     # Check if any objects are detected
     if not results or len(results[0].boxes) == 0:
         print("No objects detected.")
-        sys.exit(1)
+
     all_plates = ""
     # Loop through detected objects
     for result in results:
@@ -100,6 +98,3 @@ def get_license_plates(debug=False, image=None):
     else:
         image = cv2.imencode(".png", image)[1]
         return image, all_plates.strip()
-
-# if __name__ == "__main__":
-#     get_license_plates(debug=True)

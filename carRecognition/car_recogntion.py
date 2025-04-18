@@ -56,7 +56,3 @@ def predict(img_path: str, debug=False):
     print(f"Predicted class: {predicted_class} ({classes[predicted_class]})")
     return classes[predicted_class], output_data[0][predicted_class]
 
-
-if __name__ == "__main__":
-    # Example usage
-    predict("car.jpg", debug=True)

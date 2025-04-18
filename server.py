@@ -9,7 +9,6 @@ from db import get_db_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 from plateRecognition.plate_recognition import get_license_plates
 from carRecognition.car_recogntion import predict as carPredict
-from carRecognition.vehicle_classifier_training import continue_training
 
 
 def ensure_user_table_exists(connection: psycopg2.extensions.connection):
@@ -32,7 +31,7 @@ def ensure_user_table_exists(connection: psycopg2.extensions.connection):
         print(f"Error ensuring the 'users' table exists: {e}")
 
 
-def create_token(user_id, username, role):
+def create_token(user_id, username, role="user"):
     payload = {
         "exp": datetime.now(timezone.utc) + timedelta(hours=1),
         "sub": str(user_id),
@@ -117,7 +116,6 @@ def signup():
     if user:
         return jsonify({"error": "Username already exists"}), 400
 
-    # Changed hash method to 'pbkdf2:sha256'
     hashed_password = generate_password_hash(password)
 
     cur.execute("INSERT INTO users (username, password) VALUES (%s, %s)",
@@ -129,7 +127,7 @@ def signup():
     cur.close()
     if user:
         user_id = user[0]
-        token = create_token(user_id)
+        token = create_token(user_id, username=username, role="user")
         return jsonify({"message": "Signup successful", "token": token}), 201
     else:
         return jsonify({"error": "Failed to create user"}), 500
@@ -137,34 +135,38 @@ def signup():
 
 @app.route("/api/v1/predict", methods=["POST"])
 def predict():
-    user_id = check_auth(request.headers.get("Authorization"))
-    if not user_id:
-        return jsonify({"error": "Unauthorized"}), 401
+    try:
+        user_id = check_auth(request.headers.get("Authorization"))
+        if not user_id:
+            return jsonify({"error": "Unauthorized"}), 401
 
-    if "image" not in request.files:
-        return jsonify({"error": "No image uploaded"}), 400
+        if "image" not in request.files:
+            return jsonify({"error": "No image uploaded"}), 400
 
-    image_file = request.files["image"]
-    if image_file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
+        image_file = request.files["image"]
+        if image_file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
 
-    processed_image, all_plates = get_license_plates(image=image_file)
-    carType, confidence = carPredict(image_file)
-    if processed_image is None:
-        return jsonify({"error": "Image processing failed"}), 400
+        processed_image, all_plates = get_license_plates(image=image_file)
+        carType, confidence = carPredict(image_file)
+        if processed_image is None:
+            return jsonify({"error": "Image processing failed"}), 400
 
-    img_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
-    if processed_image.size > 0:
-        with open(img_path, "wb") as f:
-            f.write(processed_image.tobytes())
+        img_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
+        if processed_image.size > 0:
+            with open(img_path, "wb") as f:
+                f.write(processed_image.tobytes())
 
-    return jsonify(
-        {
-            "number_plate": all_plates,
-            "car_type": carType+" " + str(confidence),
-            "image_url": f"/uploads/{image_file.filename}",
-        }
-    )
+        return jsonify(
+            {
+                "number_plate": all_plates,
+                "car_type": carType+" " + str(confidence),
+                "image_url": f"/uploads/{image_file.filename}",
+            }
+        )
+    except Exception as e:
+        print(f"Error in prediction: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/api/v1/me", methods=["GET"])
@@ -177,6 +179,5 @@ def me():
 def uploaded_file(filename):
     return send_file(os.path.join(UPLOAD_FOLDER, filename), as_attachment=True)
 
-
-
-app.run(debug=True)
+port = int(os.environ.get("PORT", 5000))  # Default to 5000 if PORT is not set
+app.run(host="0.0.0.0", port=port)
