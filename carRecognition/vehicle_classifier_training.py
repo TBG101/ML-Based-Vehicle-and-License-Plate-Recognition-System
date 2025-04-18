@@ -2,7 +2,6 @@ import os
 import tensorflow as tf
 import keras
 from keras import layers, models
-from sklearn.model_selection import train_test_split
 from carRecognition.download_data import download_data
 
 MODELS_DIR = "models"
@@ -100,8 +99,3 @@ def compress_model(input_model_path, output_model_path):
     with open(output_model_path, 'wb') as f:
         f.write(tflite_model)
 
-
-if __name__ == "__main__":
-    print("Current path is :", os.getcwd())
-    compress_model(os.path.join(MODELS_DIR, "vehicle_classifier_model.keras"),
-                   os.path.join(MODELS_DIR, "vehicle_classifier_model.tflite"))

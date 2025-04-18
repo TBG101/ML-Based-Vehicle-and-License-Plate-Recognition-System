@@ -9,6 +9,7 @@ from db import get_db_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 from plateRecognition.plate_recognition import get_license_plates
 from carRecognition.car_recogntion import predict as carPredict
+from carRecognition.vehicle_classifier_training import continue_training
 
 
 def ensure_user_table_exists(connection: psycopg2.extensions.connection):
@@ -175,6 +176,7 @@ def me():
 @app.route("/api/v1/uploads/<filename>", methods=["GET"])
 def uploaded_file(filename):
     return send_file(os.path.join(UPLOAD_FOLDER, filename), as_attachment=True)
+
 
 
 app.run(debug=True)

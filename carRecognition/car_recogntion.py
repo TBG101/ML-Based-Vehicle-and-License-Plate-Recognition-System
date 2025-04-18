@@ -1,11 +1,6 @@
-import sys
-import cv2
 import numpy as np
 import tensorflow as tf
-import keras
-from keras import models
 from PIL import Image
-import os
 
 CAR_MODEL_PATH = "models/vehicle_classifier_model.tflite"
 
