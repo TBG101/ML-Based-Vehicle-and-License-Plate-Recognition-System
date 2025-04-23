@@ -179,5 +179,6 @@ def me():
 def uploaded_file(filename):
     return send_file(os.path.join(UPLOAD_FOLDER, filename), as_attachment=True)
 
-port = int(os.environ.get("PORT", 5000))  # Default to 5000 if PORT is not set
-app.run(host="0.0.0.0", port=port)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

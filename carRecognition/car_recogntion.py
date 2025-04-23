@@ -33,9 +33,7 @@ def predict(img_path: str, debug=False):
         print(f"Original image shape: {img.shape}")
         print(f"Input shape expected by model: {input_shape}")
 
-    # Optional: normalize image if model expects float inputs
-    if input_details[0]['dtype'] == np.float32:
-        img = img / 255.0
+    img = img / 255.0
 
     # Add batch dimension
     input_data = np.expand_dims(img, axis=0).astype(input_details[0]['dtype'])
@@ -56,3 +54,9 @@ def predict(img_path: str, debug=False):
     print(f"Predicted class: {predicted_class} ({classes[predicted_class]})")
     return classes[predicted_class], output_data[0][predicted_class]
 
+
+if __name__ == "__main__":
+    # Example usage
+    # Replace with your image path
+    img_path = "uploads/Image_000002.jpg"
+    predict(img_path, debug=True)
