@@ -127,6 +127,8 @@ def signup():
 
 @app.route("/api/v1/predict", methods=["POST"])
 def predict():
+    if not model_ready:
+        return jsonify({"error": "Model is still loading"}), 503
     try:
         user_id = check_auth(request.headers.get("Authorization"))
         if not user_id:
