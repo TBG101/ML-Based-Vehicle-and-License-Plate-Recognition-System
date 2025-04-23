@@ -7,9 +7,6 @@ import jwt
 from dotenv import load_dotenv
 from db import get_db_connection
 from werkzeug.security import generate_password_hash, check_password_hash
-from plateRecognition.plate_recognition import get_license_plates
-from carRecognition.car_recogntion import predict as carPredict
-
 
 def ensure_user_table_exists(connection: psycopg2.extensions.connection):
     """Ensure the 'user' table exists in the database."""
@@ -135,6 +132,8 @@ def signup():
 
 @app.route("/api/v1/predict", methods=["POST"])
 def predict():
+    from plateRecognition.plate_recognition import get_license_plates
+    from carRecognition.car_recogntion import predict as carPredict
     try:
         user_id = check_auth(request.headers.get("Authorization"))
         if not user_id:
