@@ -7,6 +7,8 @@ import jwt
 from dotenv import load_dotenv
 from db import get_db_connection
 from werkzeug.security import generate_password_hash, check_password_hash
+from preload import preload_models, model_ready, get_license_plates, carPredict
+import threading
 
 def ensure_user_table_exists(connection: psycopg2.extensions.connection):
     """Ensure the 'user' table exists in the database."""
@@ -27,7 +29,6 @@ def ensure_user_table_exists(connection: psycopg2.extensions.connection):
     except Exception as e:
         print(f"Error ensuring the 'users' table exists: {e}")
 
-
 def create_token(user_id, username, role="user"):
     payload = {
         "exp": datetime.now(timezone.utc) + timedelta(hours=1),
@@ -37,7 +38,6 @@ def create_token(user_id, username, role="user"):
     }
     token = jwt.encode(payload, secret_key, algorithm="HS256")
     return token
-
 
 def decode_token(token):
     try:
@@ -50,7 +50,6 @@ def decode_token(token):
     except jwt.InvalidTokenError as e:
         print(f"Invalid token: {e}")
         return None
-
 
 def check_auth(auth_header: str):
     print(f"Auth header: {auth_header}")
@@ -65,7 +64,7 @@ def check_auth(auth_header: str):
     user_id = payload["sub"]
     return user_id
 
-
+threading.Thread(target=preload_models, daemon=True).start()
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 load_dotenv()
@@ -74,11 +73,9 @@ secret_key = os.getenv("JWT_SECRET", "default_secret_key")
 db = get_db_connection()
 ensure_user_table_exists(db)
 
-
 @app.route("/api/v1/health", methods=["GET"])
 def health():
     return jsonify({"status": "healthy"}), 200
-
 
 @app.route("/api/v1/login", methods=["POST"])
 def login():
@@ -97,7 +94,6 @@ def login():
         return jsonify({"message": "Login successful", "token": token}), 200
     else:
         return jsonify({"error": "Invalid credentials"}), 401
-
 
 @app.route("/api/v1/signup", methods=["POST"])
 def signup():
@@ -129,11 +125,8 @@ def signup():
     else:
         return jsonify({"error": "Failed to create user"}), 500
 
-
 @app.route("/api/v1/predict", methods=["POST"])
 def predict():
-    from plateRecognition.plate_recognition import get_license_plates
-    from carRecognition.car_recogntion import predict as carPredict
     try:
         user_id = check_auth(request.headers.get("Authorization"))
         if not user_id:
