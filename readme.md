@@ -106,9 +106,6 @@ flowchart TD
     D --> E["Prediction"] & D1
 
     n1@{ shape: cylinder}
-    style A1 fill:#f9f,stroke:#333
-    style n1 fill:#E1BEE7
-    style B1 fill:#bbf,stroke:#333
 ```
 
 ```mermaid
