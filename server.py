@@ -1,4 +1,5 @@
-from flask import Flask, json, request, jsonify, send_file
+import cv2
+from flask import Flask,  request, jsonify, send_file
 import os
 import psycopg2
 import datetime
@@ -7,8 +8,10 @@ import jwt
 from dotenv import load_dotenv
 from db import get_db_connection
 from werkzeug.security import generate_password_hash, check_password_hash
-from preload import preload_models, model_ready, get_license_plates, carPredict
-import threading
+
+from plateRecognition.plate_recognition import get_license_plates
+from carRecognition.car_recogntion import predict as carPredict
+
 
 def ensure_user_table_exists(connection: psycopg2.extensions.connection):
     """Ensure the 'user' table exists in the database."""
@@ -29,6 +32,7 @@ def ensure_user_table_exists(connection: psycopg2.extensions.connection):
     except Exception as e:
         print(f"Error ensuring the 'users' table exists: {e}")
 
+
 def create_token(user_id, username, role="user"):
     payload = {
         "exp": datetime.now(timezone.utc) + timedelta(hours=1),
@@ -38,6 +42,7 @@ def create_token(user_id, username, role="user"):
     }
     token = jwt.encode(payload, secret_key, algorithm="HS256")
     return token
+
 
 def decode_token(token):
     try:
@@ -50,6 +55,7 @@ def decode_token(token):
     except jwt.InvalidTokenError as e:
         print(f"Invalid token: {e}")
         return None
+
 
 def check_auth(auth_header: str):
     print(f"Auth header: {auth_header}")
@@ -64,7 +70,6 @@ def check_auth(auth_header: str):
     user_id = payload["sub"]
     return user_id
 
-threading.Thread(target=preload_models, daemon=True).start()
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 load_dotenv()
@@ -73,9 +78,21 @@ secret_key = os.getenv("JWT_SECRET", "default_secret_key")
 db = get_db_connection()
 ensure_user_table_exists(db)
 
+
+def save_plate_images(plate_images, image_file):
+    plate_image_paths = []
+    for i, plate_image in enumerate(plate_images):
+        plate_image_path = os.path.join(
+            UPLOAD_FOLDER, f"plate_{i}_{image_file.filename}")
+        cv2.imwrite(plate_image_path, plate_image)
+        plate_image_paths.append(plate_image_path.replace("\\", "/"))
+    return plate_image_paths
+
+
 @app.route("/api/v1/health", methods=["GET"])
 def health():
     return jsonify({"status": "healthy"}), 200
+
 
 @app.route("/api/v1/login", methods=["POST"])
 def login():
@@ -94,6 +111,7 @@ def login():
         return jsonify({"message": "Login successful", "token": token}), 200
     else:
         return jsonify({"error": "Invalid credentials"}), 401
+
 
 @app.route("/api/v1/signup", methods=["POST"])
 def signup():
@@ -125,10 +143,9 @@ def signup():
     else:
         return jsonify({"error": "Failed to create user"}), 500
 
+
 @app.route("/api/v1/predict", methods=["POST"])
 def predict():
-    if not model_ready:
-        return jsonify({"error": "Model is still loading"}), 503
     try:
         user_id = check_auth(request.headers.get("Authorization"))
         if not user_id:
@@ -141,7 +158,12 @@ def predict():
         if image_file.filename == "":
             return jsonify({"error": "No selected file"}), 400
 
-        processed_image, all_plates = get_license_plates(image=image_file)
+        processed_image, plate_images = get_license_plates(image=image_file)
+        if plate_images is None:
+            return jsonify({"error": "Image processing failed"}), 400
+
+        plate_images = save_plate_images(plate_images, image_file)
+
         carType, confidence = carPredict(image_file)
         if processed_image is None:
             return jsonify({"error": "Image processing failed"}), 400
@@ -153,23 +175,26 @@ def predict():
 
         return jsonify(
             {
-                "number_plate": all_plates,
-                "car_type": carType+" " + str(confidence),
-                "image_url": f"/uploads/{image_file.filename}",
+                "number_plate": plate_images,
+                "car_type": carType + " " + str(confidence),
+                "image_url": f"/{UPLOAD_FOLDER}/{image_file.filename}",
             }
         )
     except Exception as e:
         print(f"Error in prediction: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+
 @app.route("/api/v1/me", methods=["GET"])
 def me():
     user_id = check_auth(request.headers.get("Authorization"))
     return jsonify({"user_id": user_id}), 200
 
+
 @app.route("/api/v1/uploads/<filename>", methods=["GET"])
 def uploaded_file(filename):
     return send_file(os.path.join(UPLOAD_FOLDER, filename), as_attachment=True)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

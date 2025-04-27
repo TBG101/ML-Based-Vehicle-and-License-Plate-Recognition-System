@@ -3,8 +3,6 @@ psycopg2==2.9.7
 dotenv==0.9.9
 ultralytics==8.3.100
 opencv-python==4.11.0.86
-paddleocr==2.10.0
-paddlepaddle== 3.0.0
 numpy==1.26.4
 pillow==11.1.0
 matplotlib==3.9.4

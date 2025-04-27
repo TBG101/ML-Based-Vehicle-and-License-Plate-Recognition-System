@@ -1,4 +1,4 @@
-from server import app  # replace 'your_app_file' with your actual filename
+from server import app 
 
 if __name__ == "__main__":
     app.run()
