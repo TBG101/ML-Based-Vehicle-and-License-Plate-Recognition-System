@@ -162,12 +162,10 @@ def predict():
         print(f"Error in prediction: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-
 @app.route("/api/v1/me", methods=["GET"])
 def me():
     user_id = check_auth(request.headers.get("Authorization"))
     return jsonify({"user_id": user_id}), 200
-
 
 @app.route("/api/v1/uploads/<filename>", methods=["GET"])
 def uploaded_file(filename):

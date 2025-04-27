@@ -192,13 +192,13 @@ def train_model():
 
     # Compile
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005),
         loss='categorical_crossentropy',
         metrics=['accuracy']
     )
 
     # Train the Model
-    EPOCHS = 15
+    EPOCHS = 100
 
     callbacks = [
         EarlyStopping(monitor='val_loss', patience=3,
@@ -218,6 +218,7 @@ def train_model():
 
     # Save performance graphs
     save_performance_graphs(history.history)
+
     # Save the model
     model.save('models/best_model.h5')
 
@@ -226,9 +227,10 @@ def train_model():
 
     test_loss, test_acc = model.evaluate(test_generator)
     print(f"\nTest Accuracy: {test_acc*100:.2f}%")
+    print(f"Test Loss: {test_loss:.4f}")
 
-
-    compress_model('models/best_model.h5', 'models/vehicle_classifier_model.tflite')
+    compress_model('models/best_model.h5',
+                   'models/vehicle_classifier_model.tflite')
     os.remove('models/best_model.h5')
 
 
