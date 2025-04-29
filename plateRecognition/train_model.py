@@ -25,3 +25,8 @@ def train_model():
 
     # Save the trained model
     model.save("models/plate_recognition_yolo_model.pt")
+
+
+if __name__ == "__main__":
+    train_model()
+    print("Model training completed and saved.")
