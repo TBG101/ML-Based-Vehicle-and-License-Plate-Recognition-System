@@ -5,13 +5,13 @@ on:
     branches:
       - main
     paths:
-      - "plateRecognition/train_models.py"
+      - "plateRecognition/train_model.py"
       - ".github/workflows/ci_cd.yml"
   pull_request:
     branches:
       - main
     paths:
-      - "plateRecognition/train_models.py"
+      - "plateRecognition/train_model.py"
       - ".github/workflows/ci_cd.yml"
 
 jobs:
@@ -35,14 +35,15 @@ jobs:
         run: mkdir -p models
 
       - name: Train and save models
-        run: python plateRecognition/train_models.py
+        run: python plateRecognition/train_model.py
 
       - name: Commit and Push models
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git        
-          git add models/*.pkl
+          git add models/*.pt
+          git add models/*.tflite
           git commit -m "Update models via GitHub Actions" || echo "No changes to commit"
           git push
 
@@ -61,14 +62,4 @@ jobs:
       - name: Install API dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r api/requirements.txt
-
-      - name: Trigger Render deploy
-        run: |
-          pip install requests
-          curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.RENDER_TOKEN }}" \
-            -H "Accept: application/json" \
-            -H "Content-Type: application/json" \
-            -d '{"clearCache": "do_not_clear"}' \
-            "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys"
+          pip install -r requirements.txt
