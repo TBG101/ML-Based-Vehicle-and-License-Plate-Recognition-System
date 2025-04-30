@@ -24,7 +24,7 @@ This university project at Ecole Polytechnique Sousse aims to develop an intelli
 1. Clone the repository:
    ```bash
    git clone https://github.com/TBG101/ML-Based-Vehicle-and-License-Plate-Recognition-System
-   cd poly_project/4eme/ml/backend
+   cd ML-Based-Vehicle-and-License-Plate-Recognition-System
    ```
 2. Install dependencies:
    ```bash

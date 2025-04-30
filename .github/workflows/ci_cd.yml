@@ -36,6 +36,8 @@ jobs:
 
       - name: Train and save models
         run: python plateRecognition/train_model.py
+        env: 
+          ROBOFLOW_API_KEY: ${{ secrets.ROBOFLOW_API_KEY }}
 
       - name: Commit and Push models
         run: |
