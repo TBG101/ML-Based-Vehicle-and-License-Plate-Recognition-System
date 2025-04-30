@@ -3,13 +3,13 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - main-no-paddle
     paths:
       - "plateRecognition/train_model.py"
       - ".github/workflows/ci_cd.yml"
   pull_request:
     branches:
-      - main
+      - main-no-paddle
     paths:
       - "plateRecognition/train_model.py"
       - ".github/workflows/ci_cd.yml"
